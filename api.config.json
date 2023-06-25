@@ -1,0 +1,16 @@
+{
+    "domain": "http://localhost:5000",
+    "register": {
+        "verify_email": {
+            "active": false,
+            "from": "noreply@localhost",
+            "subject": "Verify your email",
+            "text": "Please verify your email by clicking the following link: "
+        }
+    },
+    "login": {
+        "method": {
+            "by_email": true
+        }
+    }
+}
