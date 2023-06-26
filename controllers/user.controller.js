@@ -1,9 +1,10 @@
+require('dotenv').config();
 const User = require('../models/User.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
 const config = require('../api.config.json');
-const nodemailer = require('nodemailer');
+const { sendVerificationEmail, sendRestorePasswordEmail } = require('../plugins/nodemailer');
 
 // TODO: Convertir string de email a minúsculas ?
 const loginByMail = async (req, res) => {
@@ -61,31 +62,14 @@ const registerByMail = async (req, res) => {
     // Crear un nuevo usuario en la base de datos
     const newUser = new User({
       email,
-      password: hashedPassword,
+      password: hashedPassword
     });
-    // TODO: Configurar el transporte de correo [nodemailer]
-    if(config.register.verify_email.active){
-      // Generar un token de verificación
-      const verificationToken = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: '30m' });
-      newUser.verificationToken = verificationToken;
-      newUser.isVerified = false;
 
-      // Enviar correo electrónico de verificación
-      const transporter = nodemailer.createTransport({ /* configuración del transporte de correo */ });
-      const verificationURL = `${config.domain}/verify?token=${verificationToken}`;
-      const mailOptions = {
-        from: config.register.verify_email.from,
-        to: newUser.email,
-        subject: config.register.verify_email.subject,
-        text: `${config.register.verify_email.text} ${verificationURL}`,
-      };
+    const verificationToken = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: '30m' });
 
-      transporter.sendMail(mailOptions, (error) => {
-        if (error) {
-          console.error('Error al enviar el correo de verificación:', error);
-        }
-      });
-    }
+    newUser.verificationToken = verificationToken;
+
+    if (config.register.verify_email.active) sendVerificationEmail (email, verificationToken);
     
     await newUser.save();
 
@@ -96,6 +80,7 @@ const registerByMail = async (req, res) => {
   }
 }
 // TODO: Convertir string de email a minúsculas ?
+// ! Not tested -- probably not working
 const registerByUsername = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -127,7 +112,8 @@ const registerByUsername = async (req, res) => {
   }
 }
 
-// TODO: Configurar el transporte de correo electrónico (por ejemplo, SMTP)
+// * Este endpoint [/forgot-password] recibe un email enviado por el usuario en la página de recuperación de contraseña.
+// * El servidor genera un token de 30 minutos de duración y lo envía al email del usuario.
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -140,21 +126,10 @@ const forgotPassword = async (req, res) => {
     }
 
     // Generar un token para restablecer la contraseña
-    const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '30m' });
+    const restoreToken = jwt.sign({ userId: user._id }, rest, { expiresIn: '30m' });
 
     // Enviar un correo electrónico con el token para restablecer la contraseña
-    const transporter = nodemailer.createTransport({
-      // Configurar el transporte de correo electrónico (por ejemplo, SMTP)
-    });
-
-    const mailOptions = {
-      from: 'sender@example.com',
-      to: email,
-      subject: 'Recuperación de contraseña',
-      text: `Para restablecer tu contraseña, haz clic en el siguiente enlace: ${token}`,
-    };
-
-    await transporter.sendMail(mailOptions);
+    await sendRestorePasswordEmail(email, restoreToken);
 
     res.json({ message: 'Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña' });
   } catch (error) {
@@ -163,6 +138,9 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// * Este endpoint [/reset-password] recibe un token enviado por el usuario en la página de recuperación de contraseña.
+// * El servidor verifica el token y actualiza la contraseña del usuario en el servidor.
+// * El link solo es accesible desde el correo electrónico del usuario, y tiene el token como parámetro.
 const resetPassword = async (req, res) => {
   try {
     const { password } = req.body;
@@ -207,7 +185,8 @@ const verifyMail = async (req, res) => {
     }
 
     user.isVerified = true;
-    /* user.verificationToken = undefined; */
+    user.verificationToken = null;
+
     await user.save();
     return res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
   } catch (error) {
