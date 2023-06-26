@@ -4,7 +4,7 @@ const routes = require('./routes/routes');
 const port = process.env.PORT || 5000;
 const express = require('express');
 const cors = require('cors');
-require('./utils/mongoose');
+require('./plugins/mongoose');
 const app = express();
 
 const CORS_OPTIONS = {
