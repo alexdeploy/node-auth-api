@@ -24,14 +24,15 @@ function authenticateToken(req, res, next) {
 // Middleware para verificar el token de restablecimiento de contraseña
 function verifyResetToken(req, res, next) {
 
-    const token = req.body.token;
+    const token = req.headers.authorization.split(' ')[1];
 
     if (!token) {
         return res.status(400).json({ error: 'Token no proporcionado' });
     }
 
     // Verificar el token de restablecimiento de contraseña
-  jwt.verify(token, secretResetKey, (err, decoded) => {
+  jwt.verify(token, secretKey, (err, decoded) => {
+
     if (err) {
       return res.status(401).json({ error: 'Token inválido o expirado' });
     }
