@@ -126,7 +126,7 @@ const forgotPassword = async (req, res) => {
     }
 
     // Generar un token para restablecer la contraseña
-    const restoreToken = jwt.sign({ userId: user._id }, rest, { expiresIn: '30m' });
+    const restoreToken = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '30m' });
 
     // Enviar un correo electrónico con el token para restablecer la contraseña
     await sendRestorePasswordEmail(email, restoreToken);
