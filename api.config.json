@@ -2,15 +2,41 @@
     "domain": "http://localhost:5000",
     "register": {
         "verify_email": {
-            "active": false,
-            "from": "noreply@localhost",
-            "subject": "Verify your email",
-            "text": "Please verify your email by clicking the following link: "
+            "active": true
         }
     },
     "login": {
         "method": {
             "by_email": true
+        }
+    },
+    "nodemailer": {
+        "restore_psw": {
+            "from": "Alex Deploy Restore",
+            "host": "smtp.hostinger.com",
+            "port": 465,
+            "secure": true,
+            "auth": {
+                "user": "noreply@alexrueda.dev"
+            },
+            "content": {
+                "subject": "Restore your password",
+                "html": ""
+            },
+            "front_url": "/restore-password"
+        },
+        "verify_email": {
+            "from": "Alex Deploy Verify",
+            "host": "smtp.hostinger.com",
+            "port": 465,
+            "secure": true,
+            "auth": {
+                "user": "noreply@alexrueda.dev"
+            },
+            "content": {
+                "subject": "Verify your email",
+                "html": ""
+            }
         }
     }
 }
