@@ -2,7 +2,7 @@
  <!-- image -->
 </p>
 
-<h1 align="center">Node Login API</h1>
+<h1 align="center">Node Auth API</h1>
 <p align="center">
   <a href="#-features">Features</a> ·
   <a href="#-installation">Installation</a> ·
@@ -11,7 +11,7 @@
   <a href="#-documentation">Docs</a>
 
 </p>
-<p align="center">Secure API login system with NodeJS</p>
+<p align="center">High secure authentication API built with NodeJS</p>
 <div align="center">
 
 ![node.js version](https://img.shields.io/badge/node.js-v18.14.1-5865F2?style=flat&logo=node.js&color=80bc02) ![express version](https://img.shields.io/badge/express-v4.18.2-222222?style=flat&logo=express) ![mongodb version](https://img.shields.io/badge/mongodb-v5.6.0-222222?style=flat&logo=mongodb) ![license](https://img.shields.io/badge/license-MIT-purple)
@@ -33,7 +33,7 @@ Secure and easy-to-configure API-based login system developed using Node.js, Exp
 
 1. Clone the repository
 ````bash
-git clone https://github.com/alexdeploy/node-login-api.git
+git clone https://github.com/alexdeploy/node-auth-api.git
 ````
 
 2. Navigate to project directory.
@@ -67,4 +67,4 @@ yarn dev
 
 ## 📜 Documentation
 
-<a href="https://github.com/alexdeploy/node-login-api/DOCUMENTATION.md">Documentation</a>
+<a href="https://github.com/alexdeploy/node-auth-api/DOCUMENTATION.md">Documentation</a>
