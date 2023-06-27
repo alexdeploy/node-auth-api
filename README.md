@@ -18,7 +18,7 @@
 
 </div>
 
-Secure and easy-to-configure API-based login system developed using Node.js, Express, and MongoDB. It provides robust **password encryption**, **token-based authentication**, **email verification**, and **seamless email delivery** integration. With its straightforward setup, this login system enables developers to quickly build a reliable and secure API user authentication system for their applications.
+Secure and easy-to-configure user authentication API developed using Node.js, Express, and MongoDB. It provides robust **password encryption**, **token-based authentication**, **email verification**, and **seamless email delivery** integration. With its straightforward setup, this project enables developers to quickly build a reliable and secure API user authentication system for their applications.
 
   ## 🧩 Features
   
