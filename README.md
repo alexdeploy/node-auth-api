@@ -38,7 +38,7 @@ git clone https://github.com/alexdeploy/node-auth-api.git
 
 2. Navigate to project directory.
 ````bash
-cd node-login-api
+cd node-auth-api
 ````
 
 3. Install the dependencies.
@@ -46,14 +46,25 @@ cd node-login-api
 yarn install
 ````
 
-Run in dev mode. Install the dependencies.
-````bash
-yarn dev
-````
+> ⚠️ Ya tenemos el proyecto instalado, pero antes de iniciarlo hay que realizar configuración importante para que la API funcione, como la conexión con nuestra base de datos, las variables de entorno, y la configuración global de la API.
 
 ## ⚙️ Configuration
 
 [soon...]
+
+### Crear / añadir base de datos.
+
+En este caso vamos a utilizar <a href="https://www.mongodb.com/atlas/database">MongoDB Atlas</a>, un servicio de MongoDB en la nube. El plan gratuito te ofrece características sucifientes, sino, ajústalo a tu proyecto.
+
+Aquí puedes ver 👉 <a href="https://medium.com">cómo crear una base de datos en MongoDB Atlas para node-auth-api</a>.
+
+Obtenemos en link para conectarnos a la base de datos. En mongoDB Cloud es algo como esto:
+
+````
+DB_URI=mongodb+srv://<username>:<password>@cluster0.ardcz2k.mongodb.net/
+````
+
+Donde `<username>` y `<password>` son las credenciales de un usuario con acceso a la base de datos.
 
 - api.config.json
 - Connect with MongoDB
