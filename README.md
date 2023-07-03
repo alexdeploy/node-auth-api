@@ -22,12 +22,26 @@ Secure and easy-to-configure user authentication API developed using Node.js, Ex
 
   ## 🧩 Features
   
-- Server-side password encryption using bcrypt
-- Generation of verification and session tokens
-- Sending verification email links to user's email using Nodemailer
-- Well-defined endpoints for each login step
-- String sanitization for enhanced security
-- Solid unit testing.
+- ⬜ Login attempts limited.
+- ✅ Server-side password encryption using <a href="https://github.com/dcodeIO/bcrypt.js">bcrypt</a>.
+- ✅ Generation of verification tokens with <a href="https://jwt.io/">jwt</a>
+- ✅ Account verification via email with <a href="https://nodemailer.com/about/">nodemailer</a>
+- ✅ API calls with validation-middelware using user token.
+- ⬜ Protection against code injection.
+### Performance
+
+- ✅ Well-defined endpoints for each login step.
+- ✅ Solid unit testing.
+- ✅ Easy app configuration using `app.config.json` file
+
+### Functions
+
+- ✅ Sign up.
+- ✅ Sign in.
+- ✅ Restore password.
+- ✅ Verify user email.
+- ⬜ Sign in/up with social [ `Apple, Google` ]
+- ⬜ Biometric Authentification
 
 ## 📥 Installation
 
