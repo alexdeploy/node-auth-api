@@ -2,7 +2,7 @@
     "domain": "http://localhost:5000",
     "register": {
         "verify_email": {
-            "active": true
+            "active": false
         }
     },
     "login": {
@@ -37,6 +37,13 @@
                 "subject": "Verify your email",
                 "html": ""
             }
+        }
+    },
+    "security": {
+        "logginAttempts": {
+            "active": true,
+            "max": 5,
+            "lockTime": 1
         }
     }
 }

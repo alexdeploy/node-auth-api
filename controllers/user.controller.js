@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
 const config = require('../api.config.json');
 const { sendVerificationEmail, sendRestorePasswordEmail } = require('../plugins/nodemailer');
+const { checkIfAccountIsLocked, checkMaxLogginAttempts } = require('../middleware/auth');
 
 // TODO: Convertir string de email a minúsculas ?
 const loginByMail = async (req, res) => {
@@ -18,9 +19,43 @@ const loginByMail = async (req, res) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
+    if (config.security.logginAttempts.active) {
+      console.log('Checkeando si la cuenta está bloqueada...')
+      const isLocked = checkIfAccountIsLocked(user);
+      if (isLocked) {
+        const userLockedUntil = new Date(user.accountLockedUntil);
+        const userLockedUntilString = userLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
+        console.log('La cuenta está bloqueada hasta: ' + userLockedUntilString + '. Quedan ' + (userLockedUntil - Date.now()) / 60000 + ' minutos para desbloquearla.');
+        return res.status(401).json({ message: 'Account is locked until: ' + userLockedUntilString });
+      } else {
+        // check if accountLockedUntil is defined but has expired
+        if (user.accountLockedUntil !== null && user.accountLockedUntil < new Date()){
+          user.accountLockedUntil = null; // Reset accountLockedUntil because Date is null or has expired.
+          user.logginAttempts = 0; // Reset logginAttempts because Date is null or has expired.
+          console.log('La cuenta se ha desbloqueado.');
+        }
+        console.log('La cuenta no está bloqueada.');
+        console.log('Intentos de sesión: ' + (user.logginAttempts + 1) + '/' + config.security.logginAttempts.max);
+      }
+
+      const maxAttemptsReached = checkMaxLogginAttempts(user, config.security.logginAttempts.max);
+      if (maxAttemptsReached) {
+        user.accountLockedUntil = new Date(Date.now() + config.security.logginAttempts.lockTime * 60000);
+        user.save();
+        console.log('La cuenta ha alcanzado el número máximo de intentos de inicio de sesión. La cuenta está bloqueada hasta: ' + user.accountLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
+        return res.status(401).json({ message: 'Max loggin attempts reached. Account is locked.' });
+      }
+    }
+
     // Verificar la contraseña utilizando bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
+    // Increment +1 loggin attempts if password is invalid or reset loggin attempts to 0 if password is valid
+    if(config.security.logginAttempts.active){
+      user.logginAttempts = isPasswordValid ? 0 : user.logginAttempts + 1
+      user.save();
+    }
+    
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -36,6 +71,8 @@ const loginByMail = async (req, res) => {
       email: user.email,
       token
     });
+
+    user.save();
 
   } catch (err) {
     console.error(err);

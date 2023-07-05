@@ -26,6 +26,14 @@ const userSchema = new mongoose.Schema({
     verificationToken: {
         type: String,
         default: null,
+    },
+    logginAttempts: {
+        type: Number,
+        default: 0,
+    },
+    accountLockedUntil: {
+        type: Date,
+        default: null,
     }
 });
 

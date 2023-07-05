@@ -42,4 +42,17 @@ function verifyResetToken(req, res, next) {
   });
 }
 
-module.exports = { authenticateToken, verifyResetToken };
+// Comprueba si la cuenta del usuario está bloqueada.
+// Si la cuenta está bloqueada, devuelve true, de lo contrario, devuelve false.
+const checkIfAccountIsLocked = (user) => user.accountLockedUntil !== null && user.accountLockedUntil > new Date() ? true : false;
+
+// Comprueba si el usuario ha superado el número máximo de intentos de inicio de sesión.
+// Si el usuario ha superado el número máximo de intentos de inicio de sesión, devuelve true, de lo contrario, devuelve false.
+const checkMaxLogginAttempts = (user, maxAttempts) => user.logginAttempts >= maxAttempts ? true : false;
+
+module.exports = { 
+  authenticateToken,
+  verifyResetToken, 
+  checkIfAccountIsLocked,
+  checkMaxLogginAttempts
+};
