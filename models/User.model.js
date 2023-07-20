@@ -19,6 +19,23 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    phone: {
+        prefix: {
+            type: String,
+            required: false,
+            default: null,
+        },
+        number: {
+            type: Number,
+            required: false,
+            default: null,
+        },
+        isVerified: {
+            type: Boolean,
+            required: false,
+            default: false,
+        }
+    },
     isVerified: {
         type: Boolean,
         default: false,
@@ -27,13 +44,32 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    logginAttempts: {
-        type: Number,
-        default: 0,
+    security: {
+        logginAttempts: {
+            type: Number,
+            default: 0,
+        },
+        accountLockedUntil: {
+            type: Date,
+            default: null,
+        },
     },
-    accountLockedUntil: {
+    settings: {
+        type: Object,
+        default: {
+            theme: {
+                type: String,
+                default: null,
+            },
+            language: {
+                type: String,
+                default: null,
+            },
+        }
+    },
+    createdAt: {
         type: Date,
-        default: null,
+        default: Date.now,
     }
 });
 
