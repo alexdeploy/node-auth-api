@@ -5,11 +5,23 @@ const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
 const config = require('../api.config.json');
 const { sendVerificationEmail, sendRestorePasswordEmail } = require('../plugins/nodemailer');
-const { checkIfAccountIsLocked, checkMaxLogginAttempts } = require('../middleware/auth');
+const { 
+  securityCheck,
+  resetLockValues,
+  checkIfAccountIsLocked, 
+  checkMaxLogginAttempts,
+} = require('../middleware/security');
+
+const lockUser = (user) => {
+  user.security.accountLockedUntil = new Date(Date.now() + config.security.logginAttempts.lockTime * 60000);
+  user.save();
+  console.log('----- La cuenta ha alcanzado el número máximo de intentos de inicio de sesión. La cuenta está bloqueada hasta: ' + user.security.accountLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
+};
 
 // TODO: Convertir string de email a minúsculas ?
-const loginByMail = async (req, res) => {
+const signInByMail = async (req, res) => {
 
+  console.log('--------------------------------------------------------------------')
   const { email, password } = req.body;
 
   try {
@@ -20,30 +32,14 @@ const loginByMail = async (req, res) => {
     }
 
     if (config.security.logginAttempts.active) {
-      console.log('Checkeando si la cuenta está bloqueada...')
       const isLocked = checkIfAccountIsLocked(user);
-      if (isLocked) {
-        const userLockedUntil = new Date(user.accountLockedUntil);
+      if (isLocked) {º
+        const userLockedUntil = new Date(user.security.accountLockedUntil);
         const userLockedUntilString = userLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-        console.log('La cuenta está bloqueada hasta: ' + userLockedUntilString + '. Quedan ' + (userLockedUntil - Date.now()) / 60000 + ' minutos para desbloquearla.');
+        console.log('----- La cuenta está bloqueada hasta: ' + userLockedUntilString + '. Quedan ' + (userLockedUntil - Date.now()) / 60000 + ' minutos para desbloquearla.');
         return res.status(401).json({ message: 'Account is locked until: ' + userLockedUntilString });
       } else {
-        // check if accountLockedUntil is defined but has expired
-        if (user.accountLockedUntil !== null && user.accountLockedUntil < new Date()){
-          user.accountLockedUntil = null; // Reset accountLockedUntil because Date is null or has expired.
-          user.logginAttempts = 0; // Reset logginAttempts because Date is null or has expired.
-          console.log('La cuenta se ha desbloqueado.');
-        }
-        console.log('La cuenta no está bloqueada.');
-        console.log('Intentos de sesión: ' + (user.logginAttempts + 1) + '/' + config.security.logginAttempts.max);
-      }
-
-      const maxAttemptsReached = checkMaxLogginAttempts(user, config.security.logginAttempts.max);
-      if (maxAttemptsReached) {
-        user.accountLockedUntil = new Date(Date.now() + config.security.logginAttempts.lockTime * 60000);
-        user.save();
-        console.log('La cuenta ha alcanzado el número máximo de intentos de inicio de sesión. La cuenta está bloqueada hasta: ' + user.accountLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
-        return res.status(401).json({ message: 'Max loggin attempts reached. Account is locked.' });
+          resetLockValues(user);
       }
     }
 
@@ -52,11 +48,21 @@ const loginByMail = async (req, res) => {
 
     // Increment +1 loggin attempts if password is invalid or reset loggin attempts to 0 if password is valid
     if(config.security.logginAttempts.active){
-      user.logginAttempts = isPasswordValid ? 0 : user.logginAttempts + 1
-      user.save();
+      console.log('Verificando contraseña...')
+      user.security.logginAttempts = isPasswordValid ? 0 : user.security.logginAttempts + 1
+      console.log('Checkeando si ha alcanzado intentos máximos de sesión...')
+      const maxAttemptsReached = checkMaxLogginAttempts(user, config.security.logginAttempts.max);
+      if (maxAttemptsReached) {
+        lockUser(user)
+        return res.status(401).json({ message: 'Max loggin attempts reached. Account is locked.' });
+      }
+      console.log('----- La cuenta no ha alcanzado el número máximo de intentos de inicio de sesión.');
     }
-    
+
+    console.log('Verificando contraseña...')
     if (!isPasswordValid) {
+      console.log('----- Contraseña inválida. Intentos de sesión: ' + (user.security.logginAttempts) + '/' + config.security.logginAttempts.max);
+      user.save();
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
@@ -67,11 +73,10 @@ const loginByMail = async (req, res) => {
     );
 
     res.status(200).json({
-      ok: true,
       email: user.email,
       token
     });
-
+    console.log('----- Contraseña verificada correctamente. Inicio de sesión exitoso.');
     user.save();
 
   } catch (err) {
@@ -81,10 +86,12 @@ const loginByMail = async (req, res) => {
 }
 
 // TODO: Convertir string de email a minúsculas ?
-const registerByMail = async (req, res) => {
+const signUpByMail = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(email)
+    // Convertir el email a minúsculas
+    const lowerCaseEmail = email.toLowerCase();
     // Verificar si el usuario ya existe en la base de datos
     const existingEmail = await User.findOne({ email });
 
@@ -102,11 +109,11 @@ const registerByMail = async (req, res) => {
       password: hashedPassword
     });
 
-    const verificationToken = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: '30m' });
+    const sessionToken = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: '30m' });
 
-    newUser.verificationToken = verificationToken;
+    newUser.tokens.session = sessionToken;
 
-    if (config.register.verify_email.active) sendVerificationEmail (email, verificationToken);
+    if (config.register.verify_email.active) sendVerificationEmail (email, sessionToken);
     
     await newUser.save();
 
@@ -118,7 +125,7 @@ const registerByMail = async (req, res) => {
 }
 // TODO: Convertir string de email a minúsculas ?
 // ! Not tested -- probably not working
-const registerByUsername = async (req, res) => {
+const signUpByUsername = async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -232,9 +239,9 @@ const verifyMail = async (req, res) => {
 };
 
 module.exports = {
-  loginByMail,
-  registerByUsername,
-  registerByMail,
+  signInByMail,
+  signUpByUsername,
+  signUpByMail,
   forgotPassword,
   resetPassword,
   verifyMail

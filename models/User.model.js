@@ -36,13 +36,19 @@ const userSchema = new mongoose.Schema({
             default: false,
         }
     },
+    tokens: {
+        session: {
+            type: String,
+            default: null,
+        },
+        resetPassword: {
+            type: String,
+            default: null,
+        },
+    },
     isVerified: {
         type: Boolean,
         default: false,
-    },
-    verificationToken: {
-        type: String,
-        default: null,
     },
     security: {
         logginAttempts: {

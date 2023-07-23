@@ -3,7 +3,7 @@ const secretKey = process.env.TOKEN_SECRET_KEY;
 const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
 
 
-function authenticateToken(req, res, next) {
+function verifySessionToken(req, res, next) {
 
     const token = req.headers.authorization;
 
@@ -31,7 +31,7 @@ function verifyResetToken(req, res, next) {
     }
 
     // Verificar el token de restablecimiento de contraseña
-  jwt.verify(token, secretKey, (err, decoded) => {
+  jwt.verify(token, secretResetKey, (err, decoded) => {
 
     if (err) {
       return res.status(401).json({ error: 'Token inválido o expirado' });
@@ -42,17 +42,8 @@ function verifyResetToken(req, res, next) {
   });
 }
 
-// Comprueba si la cuenta del usuario está bloqueada.
-// Si la cuenta está bloqueada, devuelve true, de lo contrario, devuelve false.
-const checkIfAccountIsLocked = (user) => user.accountLockedUntil !== null && user.accountLockedUntil > new Date() ? true : false;
-
-// Comprueba si el usuario ha superado el número máximo de intentos de inicio de sesión.
-// Si el usuario ha superado el número máximo de intentos de inicio de sesión, devuelve true, de lo contrario, devuelve false.
-const checkMaxLogginAttempts = (user, maxAttempts) => user.logginAttempts >= maxAttempts ? true : false;
 
 module.exports = { 
-  authenticateToken,
-  verifyResetToken, 
-  checkIfAccountIsLocked,
-  checkMaxLogginAttempts
+  verifySessionToken,
+  verifyResetToken,
 };
