@@ -37,36 +37,36 @@ const sendVerificationEmail = async (email, verificationToken) => {
     });
 };
 
-const sendRestorePasswordEmail = async (email, restoreToken) => {
+const sendResetPasswordEmail = async (email, resetPasswordToken) => {
 
     const transporter = nodemailer.createTransport({
-      host: config.nodemailer.restore_psw.host,
-      port: config.nodemailer.restore_psw.port,
-      secure: config.nodemailer.restore_psw.secure,
+      host: config.nodemailer.reset_psw.host,
+      port: config.nodemailer.reset_psw.port,
+      secure: config.nodemailer.reset_psw.secure,
       auth: {
-        user: config.nodemailer.restore_psw.auth.user,
-        pass: process.env.EMAIL_RESTORE_PASSWORD,
+        user: config.nodemailer.reset_psw.auth.user,
+        pass: process.env.EMAIL_RESET_PASSWORD,
       }
     })
 
     // TODO: Aquí se debería enviar un link al frontend para que el usuario pueda cambiar su contraseña.
-    const resetUrl = `${config.domain}${config.nodemailer.restore_psw.front_url}?restoreToken=${restoreToken}`;
+    const resetUrl = `${config.domain}${config.nodemailer.reset_psw.front_url}?token=${resetPasswordToken}`;
 
-    const emailTemplate = fs.readFileSync('./mails/restore_password.html', 'utf-8');
+    const emailTemplate = fs.readFileSync('./mails/reset_password.html', 'utf-8');
 
     const emailBody = emailTemplate.replace('{{resetUrl}}', resetUrl);
 
     const mailOptions = {
-      from: `${config.nodemailer.restore_psw.from} <${config.nodemailer.restore_psw.auth.user}>`,
+      from: `${config.nodemailer.reset_psw.from} <${config.nodemailer.reset_psw.auth.user}>`,
       to: email,
-      subject: config.nodemailer.restore_psw.content.subject,
+      subject: config.nodemailer.reset_psw.content.subject,
       html: emailBody
     };
     transporter.sendMail( mailOptions, (error, info) => {
         if (error) {
             console.error('❌ Error al enviar el correo de recuperación a el usuario: ' + email + '\nError: ', error);
         } else {
-            console.log(`✅ SUCCESS: Restore password mail [${info.messageId}] was sent to the user [${email}]`);
+            console.log(`✅ SUCCESS: Reset password mail [${info.messageId}] was sent to the user [${email}]`);
             console.log(info)
         }
     });
@@ -74,5 +74,5 @@ const sendRestorePasswordEmail = async (email, restoreToken) => {
 
 module.exports = {
     sendVerificationEmail,
-    sendRestorePasswordEmail
+    sendResetPasswordEmail
 }

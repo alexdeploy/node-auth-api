@@ -1,5 +1,5 @@
 {
-    "domain": "http://localhost:5000",
+    "domain": "http://localhost:9000",
     "register": {
         "verify_email": {
             "active": false
@@ -11,8 +11,8 @@
         }
     },
     "nodemailer": {
-        "restore_psw": {
-            "from": "Alex Deploy Restore",
+        "reset_psw": {
+            "from": "Alex Deploy Reset",
             "host": "smtp.hostinger.com",
             "port": 465,
             "secure": true,
@@ -20,10 +20,10 @@
                 "user": "noreply@alexrueda.dev"
             },
             "content": {
-                "subject": "Restore your password",
+                "subject": "Reset your password",
                 "html": ""
             },
-            "front_url": "/restore-password"
+            "front_url": "/reset-password"
         },
         "verify_email": {
             "from": "Alex Deploy Verify",

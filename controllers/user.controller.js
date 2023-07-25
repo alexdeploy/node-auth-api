@@ -3,8 +3,9 @@ const User = require('../models/User.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
+const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
 const config = require('../api.config.json');
-const { sendVerificationEmail, sendRestorePasswordEmail } = require('../plugins/nodemailer');
+const { sendVerificationEmail, sendResetPasswordEmail } = require('../plugins/nodemailer');
 const { 
   securityCheck,
   resetLockValues,
@@ -33,7 +34,7 @@ const signInByMail = async (req, res) => {
 
     if (config.security.logginAttempts.active) {
       const isLocked = checkIfAccountIsLocked(user);
-      if (isLocked) {º
+      if (isLocked) {
         const userLockedUntil = new Date(user.security.accountLockedUntil);
         const userLockedUntilString = userLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
         console.log('----- La cuenta está bloqueada hasta: ' + userLockedUntilString + '. Quedan ' + (userLockedUntil - Date.now()) / 60000 + ' minutos para desbloquearla.');
@@ -69,7 +70,7 @@ const signInByMail = async (req, res) => {
     const token = jwt.sign(
       { userId: user._id },
       secretKey,
-      { expiresIn: '1h' } // Adjustable expiration time
+      { expiresIn: '1w' } // 1m = 1 minute, 1h = 1 hour, 1d = 1 day, 1w = 1 week
     );
 
     res.status(200).json({
@@ -85,11 +86,11 @@ const signInByMail = async (req, res) => {
   }
 }
 
-// TODO: Convertir string de email a minúsculas ?
+
 const signUpByMail = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email)
+    // TODO: Convertir el email a minúsculas?
     // Convertir el email a minúsculas
     const lowerCaseEmail = email.toLowerCase();
     // Verificar si el usuario ya existe en la base de datos
@@ -117,10 +118,10 @@ const signUpByMail = async (req, res) => {
     
     await newUser.save();
 
-    res.json({ message: 'Usuario registrado exitosamente' });
+    return res.json({ message: 'Usuario registrado exitosamente' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor' });
   }
 }
 // TODO: Convertir string de email a minúsculas ?
@@ -149,10 +150,10 @@ const signUpByUsername = async (req, res) => {
 
     await newUser.save();
 
-    res.json({ message: 'Usuario registrado exitosamente' });
+    return res.json({ message: 'Usuario registrado exitosamente' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor' });
   }
 }
 
@@ -170,15 +171,19 @@ const forgotPassword = async (req, res) => {
     }
 
     // Generar un token para restablecer la contraseña
-    const restoreToken = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '30m' });
+    const resetPasswordToken = jwt.sign({ userId: user._id }, secretResetKey, { expiresIn: '30m' });
+
+    user.tokens.resetPassword = resetPasswordToken;
+
+    await user.save();
 
     // Enviar un correo electrónico con el token para restablecer la contraseña
-    await sendRestorePasswordEmail(email, restoreToken);
+    await sendResetPasswordEmail(email, resetPasswordToken);
 
-    res.json({ message: 'Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña' });
+    return res.json({ message: 'Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor' });
   }
 };
 
@@ -189,26 +194,33 @@ const resetPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const userId = req.userId;
-
     // Obtener el usuario de la base de datos
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
+    // TODO: Comprobar si el token de la base de datos coincide con el token enviado por el usuario
+    const token = req.headers.authorization.split(' ')[1];
+
+    if (user.tokens.resetPassword !== token) {
+      return res.status(401).json({ error: 'Token no coindice con el reset token del usuario' });
+    }
 
     // Generar una nueva contraseña hash utilizando bcrypt
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);º
 
     // Actualizar la contraseña en la base de datos
     user.password = hashedPassword;
+    user.tokens.resetPassword = null;
+
     await user.save();
 
-    res.json({ message: 'Contraseña restablecida exitosamente' });
+    return res.json({ message: 'Contraseña restablecida exitosamente' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor' });
   }
 };
 
