@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
     phone: {
         prefix: {
             type: String,
@@ -39,18 +43,25 @@ const userSchema = new mongoose.Schema({
     tokens: {
         session: {
             type: String,
+            required: true,
             default: null,
         },
         resetPassword: {
             type: String,
+            required: false,
             default: null,
         },
-    },
-    isVerified: {
-        type: Boolean,
-        default: false,
+        verifyEmail: {
+            type: String,
+            required: false,
+            default: null,
+        }
     },
     security: {
+        lockReason: {
+            type: String,
+            default: null,
+        },
         logginAttempts: {
             type: Number,
             default: 0,
@@ -58,25 +69,26 @@ const userSchema = new mongoose.Schema({
         accountLockedUntil: {
             type: Date,
             default: null,
-        },
+            },
     },
     settings: {
-        type: Object,
-        default: {
-            theme: {
-                type: String,
-                default: null,
-            },
-            language: {
-                type: String,
-                default: null,
-            },
+        theme: {
+            type: String,
+            default: null,
+        },
+        language: {
+            type: String,
+            default: null,
         }
     },
     createdAt: {
         type: Date,
         default: Date.now,
-    }
+    },
+    updatedAt: {
+        type: Date,
+        default: null,
+    },
 });
 
 // Generate username if not provided

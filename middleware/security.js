@@ -46,6 +46,25 @@ const securityCheck = (user, res) => {
       }
 }
 
+///////////////////////////
+// PENDING OF USE/TESTING
+///////////////////////////
+// TODO: Crear funciones de filtrado sanitizado los strings para correo, nombre de usuario y contraseña.
+
+const escapeHtml = (unsafe) => {
+  return unsafe.replace(/[&<"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[m]));
+}
+
+const sanitizedUsername = (username) => username.replace(/[^\w\s]/gi, '');
+
+const sanitizedEmail = (email) => email.replace(/[^\w\s@.]/gi, '');
+
 module.exports = { 
   securityCheck,
   checkIfAccountIsLocked,

@@ -15,7 +15,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
         }
       })
     
-    const verificationURL = `${config.domain}/api/verify?token=${verificationToken}`;
+    const verificationURL = `${config.domain}/verify-email?token=${verificationToken}`;
 
     const emailTemplate = fs.readFileSync('./mails/verify_email.html', 'utf-8');
 
@@ -49,7 +49,6 @@ const sendResetPasswordEmail = async (email, resetPasswordToken) => {
       }
     })
 
-    // TODO: Aquí se debería enviar un link al frontend para que el usuario pueda cambiar su contraseña.
     const resetUrl = `${config.domain}${config.nodemailer.reset_psw.front_url}?token=${resetPasswordToken}`;
 
     const emailTemplate = fs.readFileSync('./mails/reset_password.html', 'utf-8');

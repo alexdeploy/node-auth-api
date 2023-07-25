@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
 const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
+const secretVerifyEmailKey = process.env.TOKEN_VERIFY_EMAIL_SECRET_KEY;
 const config = require('../api.config.json');
 const { sendVerificationEmail, sendResetPasswordEmail } = require('../plugins/nodemailer');
 const { 
@@ -114,7 +115,11 @@ const signUpByMail = async (req, res) => {
 
     newUser.tokens.session = sessionToken;
 
-    if (config.register.verify_email.active) sendVerificationEmail (email, sessionToken);
+    if (config.register.verify_email.active) {
+      const verificationToken = jwt.sign({ userId: newUser._id }, secretVerifyEmailKey, { expiresIn: '30m' });
+      newUser.tokens.verifyEmail = verificationToken;
+      sendVerificationEmail (email, verificationToken);
+    }
     
     await newUser.save();
 
@@ -194,14 +199,19 @@ const resetPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const userId = req.userId;
+
+    const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+    if(!token) {
+      return res.status(400).json({ error: 'Token de verificación no encontrado' });
+    }
+
     // Obtener el usuario de la base de datos
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    // TODO: Comprobar si el token de la base de datos coincide con el token enviado por el usuario
-    const token = req.headers.authorization.split(' ')[1];
 
     if (user.tokens.resetPassword !== token) {
       return res.status(401).json({ error: 'Token no coindice con el reset token del usuario' });
@@ -211,10 +221,9 @@ const resetPassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);º
 
-    // Actualizar la contraseña en la base de datos
+    // Set values
     user.password = hashedPassword;
     user.tokens.resetPassword = null;
-
     await user.save();
 
     return res.json({ message: 'Contraseña restablecida exitosamente' });
@@ -224,12 +233,17 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const verifyMail = async (req, res) => {
-  const { token } = req.query;
+const verifyEmail = async (req, res) => {
+
 
   try {
+    const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+    if(!token) {
+      return res.status(400).json({ error: 'Token de verificación no encontrado' });
+    }
     // Verificar el token de verificación
-    const decodedToken = jwt.verify(token, secretKey);
+    const decodedToken = jwt.verify(token, secretVerifyEmailKey);
 
     // Obtener el ID de usuario desde el token
     const userId = decodedToken.userId;
@@ -240,10 +254,19 @@ const verifyMail = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    user.isVerified = true;
-    user.verificationToken = null;
+    if(user.isVerified) {
+      return res.status(400).json({ error: 'User is already verified' });
+    }
 
+    if (user.tokens.verifyEmail !== token) {
+      return res.status(401).json({ error: 'Token no coindice con el token de verificación del usuario' });
+    }
+
+    // Set new values
+    user.isVerified = true;
+    user.tokens.verifyEmail = null;
     await user.save();
+
     return res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
   } catch (error) {
     return res.status(400).json({ error: 'Token de verificación inválido' });
@@ -256,5 +279,5 @@ module.exports = {
   signUpByMail,
   forgotPassword,
   resetPassword,
-  verifyMail
+  verifyEmail
 };

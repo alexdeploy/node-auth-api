@@ -2,7 +2,7 @@
     "domain": "http://localhost:9000",
     "register": {
         "verify_email": {
-            "active": false
+            "active": true
         }
     },
     "login": {
