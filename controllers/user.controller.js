@@ -69,7 +69,7 @@ const signInByMail = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role.id },
       secretKey,
       { expiresIn: '1w' } // 1m = 1 minute, 1h = 1 hour, 1d = 1 day, 1w = 1 week
     );
@@ -111,12 +111,16 @@ const signUpByMail = async (req, res) => {
       password: hashedPassword
     });
 
-    const sessionToken = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: '30m' });
+    const sessionToken = jwt.sign(
+      { userId: newUser._id, role: newUser.role.id }, 
+      secretKey, 
+      { expiresIn: '30m' }
+    );
 
     newUser.tokens.session = sessionToken;
 
     if (config.register.verify_email.active) {
-      const verificationToken = jwt.sign({ userId: newUser._id }, secretVerifyEmailKey, { expiresIn: '30m' });
+      const verificationToken = jwt.sign({ userId: newUser._id, role: newUser.role }, secretVerifyEmailKey, { expiresIn: '30m' });
       newUser.tokens.verifyEmail = verificationToken;
       sendVerificationEmail (email, verificationToken);
     }
@@ -130,7 +134,7 @@ const signUpByMail = async (req, res) => {
   }
 }
 // TODO: Convertir string de email a minúsculas ?
-// ! Not tested -- probably not working
+// ! DEPRECATED
 const signUpByUsername = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -176,7 +180,11 @@ const forgotPassword = async (req, res) => {
     }
 
     // Generar un token para restablecer la contraseña
-    const resetPasswordToken = jwt.sign({ userId: user._id }, secretResetKey, { expiresIn: '30m' });
+    const resetPasswordToken = jwt.sign(
+      { userId: user._id, role: user.role.id }, 
+      secretResetKey, 
+      { expiresIn: '30m' }
+    );
 
     user.tokens.resetPassword = resetPasswordToken;
 
