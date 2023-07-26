@@ -22,7 +22,7 @@ Secure and easy-to-configure user authentication API developed using Node.js, Ex
 
   ## 🧩 Features
   
-- ⬜ Login attempts limited.
+- ✅ Login attempts limited.
 - ✅ Server-side password encryption using <a href="https://github.com/dcodeIO/bcrypt.js">bcrypt</a>.
 - ✅ Generation of verification tokens with <a href="https://jwt.io/">jwt</a>
 - ✅ Account verification via email with <a href="https://nodemailer.com/about/">nodemailer</a>
@@ -30,7 +30,7 @@ Secure and easy-to-configure user authentication API developed using Node.js, Ex
 - ⬜ Protection against code injection.
 ### Performance
 
-- ✅ Well-defined endpoints for each login step.
+- ✅ Well-defined endpoints for each authentication step.
 - ✅ Solid unit testing.
 - ✅ Easy app configuration using `app.config.json` file
 
