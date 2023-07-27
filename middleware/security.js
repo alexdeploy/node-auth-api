@@ -1,4 +1,4 @@
-const config = require('../api.config.json');
+const config = require('../api.config.js');
 
 // TODO: Refactorizar y simplificar
 // TODO: Documentar funciones

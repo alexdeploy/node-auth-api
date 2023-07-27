@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const secretKey = process.env.TOKEN_SECRET_KEY;
 const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
 const secretVerifyEmailKey = process.env.TOKEN_VERIFY_EMAIL_SECRET_KEY;
-const config = require('../api.config.json');
+const config = require('../api.config.js');
 const { sendVerificationEmail, sendResetPasswordEmail } = require('../plugins/nodemailer');
 const { 
   securityCheck,
@@ -227,7 +227,7 @@ const resetPassword = async (req, res) => {
 
     // Generar una nueva contraseña hash utilizando bcrypt
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);º
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Set values
     user.password = hashedPassword;

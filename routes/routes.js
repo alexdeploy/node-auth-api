@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { verifySessionToken, verifyResetToken, authorize } = require('../middleware/auth');
 const { signInByMail, signUpByMail, signUpByUsername, forgotPassword, resetPassword, verifyEmail } = require('../controllers/user.controller');
+const config = require('../api.config');
 
+console.log(config);
 const role = {
     admin: { id: 0, name: 'admin', description: 'Administrator' },
     user: { id: 1, name: 'user', description: 'User' },
