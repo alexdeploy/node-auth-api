@@ -1,8 +1,8 @@
 {
-  "name": "pisito-server",
+  "name": "node-auth-api",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "alexdeploy",
+  "author": "@alexdeploy",
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
