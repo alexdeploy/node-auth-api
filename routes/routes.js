@@ -17,4 +17,8 @@ router.post('/verify-email', authorize(role.user, role.admin), verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', verifyResetToken, resetPassword);
 
+router.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
 module.exports = router;
