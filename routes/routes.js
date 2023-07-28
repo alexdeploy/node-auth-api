@@ -4,7 +4,6 @@ const { verifySessionToken, verifyResetToken, authorize } = require('../middlewa
 const { signInByMail, signUpByMail, signUpByUsername, forgotPassword, resetPassword, verifyEmail } = require('../controllers/user.controller');
 const config = require('../api.config');
 
-console.log(config);
 const role = {
     admin: { id: 0, name: 'admin', description: 'Administrator' },
     user: { id: 1, name: 'user', description: 'User' },
