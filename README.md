@@ -86,9 +86,101 @@ Donde `<username>` y `<password>` son las credenciales de un usuario con acceso 
 
 ## 🚀 Deploying
 
-[soon...]
+El deploy se va a hacer en Heroku. Para esto vamos a necesitar:
 
-- Deploy on Heroku (or others)
+- Cuenta de Heroku
+- Heroku CLI
+
+Una vez instalado heroku CLI, en la carpeta del proyecto ejecutamos:
+
+````bash
+heroku login
+````
+
+Y persionamos ENTER. Nos abrirá una ventana para hacer login en nuestra cuenta de heroku.
+
+````bash
+heroku create -a app-name
+````
+
+Esto creará una nueva app en heroku.
+
+Comprobamos que se ha configurado correctamente con:
+
+````bash
+git remote -v
+````
+
+
+````bash
+> heroku  https://git.heroku.com/node-auth-api-dev.git (fetch)
+> heroku  https://git.heroku.com/node-auth-api-dev.git (push)
+> origin  https://github.com/alexdeploy/node-auth-api.git (fetch)
+> origin  https://github.com/alexdeploy/node-auth-api.git (push)
+````
+
+Configuramos las variables de entorno en heroku.
+
+````bash
+heroku config:set NOMBRE_VARIABLE=valor
+````
+
+Comprobamos que se han guardado correctamente
+
+````bash
+heroku config
+````
+
+Vamos a nuestra aplicación -> Settings -> Config Bars.
+
+Introducimos todos las claves y valores del archivo `.env`.
+
+````bash
+# Desplegar la rama main
+git push heroku main
+````
+
+````bash
+# Desplegar otra rama (dev)
+git push heroku dev:main
+````
+
+NOTAS IMPORTANTES SOBRE HEROKU CLI
+
+- Para volver a hacer deploy en caso de falla, tienes que realizar por lo menos un `git commit`
+
+### Set a custom domain
+
+Vamos a hacerlo utilizando los <a href="https://devcenter.heroku.com/articles/custom-domains">comandos `domain` de Heroku CLI</a>.
+
+Si ya tenemos nuestro proveedor de dominios y nuestro dominio:
+
+````bash
+heroku domains:add www.example.com
+````
+
+Comprobamos que se ha creado:
+
+````bash
+heroku domains
+````
+
+|   Domain Name   | DNS Record Type  |       DNS Target        |    SNI Endpoint   |
+|-----------------|------------------|-------------------------| ------------------|
+| www.example.com | CNAME            | ...6qyoi.herokudns.com  | randomname-123321 |
+
+Si te equivocas, se pueden borrar con `heroku domains:remove www.example.com`.
+
+El DNS Target es el que tenemos que introducir en el valor CNAME de los registros DNS de nuestro dominio. El proveedor de dominio en este caso va a ser <a href="https://www.hostinger.com/">hostinger.com</a>.
+
+Quedando así:
+
+|  Type  | Name            | Content (DNS Target)   | TTL |
+|--------|-----------------| -----------------------|-----|
+| CNAME  | www.example.com | ...6qyoi.herokudns.com | ?   |
+
+En caso de un subdominio, habría que introducir solo su nombre, por ejemplo introduciendo `api`, apuntaría a `api.example.com`.
+
 
 ## 📜 Documentation
 
