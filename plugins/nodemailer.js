@@ -3,6 +3,9 @@ const config = require('../api.config.js');
 const fs = require('fs');
 require('dotenv').config();
 
+const productionURL = `${config.domain.name}`;
+const developmentURL = `${config.domain.name}:${config.domain.port}`;
+
 const sendVerificationEmail = async (email, verificationToken) => {
 
     const transporter = nodemailer.createTransport({
@@ -15,7 +18,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
         }
       })
     
-    const verificationURL = `${config.domain}/verify-email?token=${verificationToken}`;
+    const verificationURL = `${developmentURL}:/verify-email?token=${verificationToken}`;
 
     const emailTemplate = fs.readFileSync('./mails/verify_email.html', 'utf-8');
 
@@ -49,7 +52,7 @@ const sendResetPasswordEmail = async (email, resetPasswordToken) => {
       }
     })
 
-    const resetUrl = `${config.domain}${config.nodemailer.reset_psw.front_url}?token=${resetPasswordToken}`;
+    const resetUrl = `${developmentURL}${config.nodemailer.reset_psw.front_url}?token=${resetPasswordToken}`;
 
     const emailTemplate = fs.readFileSync('./mails/reset_password.html', 'utf-8');
 

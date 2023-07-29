@@ -2,22 +2,24 @@ const express = require('express');
 const router = express.Router();
 const { verifySessionToken, verifyResetToken, authorize } = require('../middleware/auth');
 const { signInByMail, signUpByMail, signUpByUsername, forgotPassword, resetPassword, verifyEmail } = require('../controllers/user.controller');
+
 const config = require('../api.config');
+const slug = config.domain.route.auth.slug;
+const role = config.roles;
 
-const role = {
-    admin: { id: 0, name: 'admin', description: 'Administrator' },
-    user: { id: 1, name: 'user', description: 'User' },
-    guest: { id: 2, name: 'guest', description: 'Guest' },
-  }
+router.post(slug.sign_in, signInByMail);
 
-router.post('/sign-in', signInByMail);
-router.post('/sign-up', signUpByMail);
-router.post('/verify-email', authorize(role.user, role.admin), verifyEmail);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', verifyResetToken, resetPassword);
+router.post(slug.sign_up, signUpByMail);
 
-router.get('/', (req, res) => {
-    res.send('Hello World!');
-});
+router.post(slug.forgot_password, forgotPassword);
+
+router.post(slug.reset_password, verifyResetToken, resetPassword);
+
+router.post(slug.verify_email, authorize(role.user, role.admin), verifyEmail);
+
+
+// TODO: /verify-phone
+
+// TODO: /refresh-token (como ruta o como middleware?)
 
 module.exports = router;
