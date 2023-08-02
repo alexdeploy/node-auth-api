@@ -6,8 +6,8 @@ module.exports = {
         client: 'http://localhost'
     },
     port: {
-        server: process.env.PORT || 5000,
-        client: process.env.PORT || 9000
+        server: process.env.PORT_SERVER || 5000,
+        client: process.env.PORT_CLIENT || 9000
     },
     route: {
         auth: {

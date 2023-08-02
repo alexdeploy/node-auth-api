@@ -4,7 +4,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const productionURL = `${config.domain.name}`;
-const developmentURL = `${config.domain.name}:${config.domain.port}`;
+const developmentURL = `${config.domain.name.client}:${config.domain.port.client}`;
 
 const sendVerificationEmail = async (email, verificationToken) => {
 
@@ -18,7 +18,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
         }
       })
     
-    const verificationURL = `${developmentURL}:/verify-email?token=${verificationToken}`;
+    const verificationURL = `${developmentURL}/verify-email?token=${verificationToken}`;
 
     const emailTemplate = fs.readFileSync('./mails/verify_email.html', 'utf-8');
 

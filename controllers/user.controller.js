@@ -119,7 +119,7 @@ const signUpByMail = async (req, res) => {
 
     newUser.tokens.session = sessionToken;
 
-    if (config.register.verify_email.active) {
+    if (config.register.verification.active && config.register.verification.method === 'email') {
       const verificationToken = jwt.sign({ userId: newUser._id, role: newUser.role }, secretVerifyEmailKey, { expiresIn: '30m' });
       newUser.tokens.verifyEmail = verificationToken;
       sendVerificationEmail (email, verificationToken);
@@ -281,11 +281,17 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+const verifyPhone = async (req, res) => {
+
+  // TODO: Implementar logica
+}
+
 module.exports = {
   signInByMail,
   signUpByUsername,
   signUpByMail,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  verifyPhone,
 };

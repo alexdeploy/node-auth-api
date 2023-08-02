@@ -1,5 +1,6 @@
 module.exports = {
-    verify_email: {
-        active: false
+    verification: {
+        active: true,
+        method: 'email', // 'email' or 'phone'
     }
 }
