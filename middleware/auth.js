@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-const secretKey = process.env.TOKEN_SECRET_KEY;
-const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
+
 
 function verifySessionToken(req, res, next) {
 
+    const secretKey = process.env.TOKEN_SECRET_KEY;
     const token = req.headers.authorization;
 
     if (!token) {
@@ -23,16 +23,17 @@ function verifySessionToken(req, res, next) {
 // Middleware para verificar el token de restablecimiento de contraseña
 function verifyResetToken(req, res, next) {
 
-    const bearerToken = req.headers.authorization.split(' ')[1];
+    const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
+    const resetPasswordToken = req.headers.authorization.split(' ')[1];
 
-    if (!bearerToken) {
+    if (!resetPasswordToken) {
         return res.status(400).json({ error: 'Token no proporcionado' });
     }
 
-    // Verificar el token de restablecimiento de contraseña
-  jwt.verify(bearerToken, secretResetKey, (err, decoded) => {
+  jwt.verify(resetPasswordToken, secretResetKey, (err, decoded) => {
 
     if (err) {
+      console.log(err);
       return res.status(401).json({ error: 'Token inválido o expirado' });
     }
 
