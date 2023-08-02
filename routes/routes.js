@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifySessionToken, verifyResetToken, authorize } = require('../middleware/auth');
-const { signInByMail, signUpByMail, signUpByUsername, forgotPassword, resetPassword, verifyEmail } = require('../controllers/user.controller');
+const { signInByMail, signUpByMail, signUpByUsername, forgotPassword, resetPassword, verifyEmail, verifyPhone } = require('../controllers/user.controller');
 
 const config = require('../api.config');
 const slug = config.domain.route.auth.slug;
@@ -17,8 +17,8 @@ router.post(slug.reset_password, verifyResetToken, resetPassword);
 
 router.post(slug.verify_email, authorize(role.user, role.admin), verifyEmail);
 
-
 // TODO: /verify-phone
+// router.post(slug.verify_phone, verifyPhone);
 
 // TODO: /refresh-token (como ruta o como middleware?)
 
