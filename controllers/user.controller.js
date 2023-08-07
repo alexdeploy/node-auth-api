@@ -117,11 +117,11 @@ const signUpByMail = async (req, res) => {
       { expiresIn: '30m' }
     );
 
-    newUser.tokens.session = sessionToken;
+    newUser.security.tokens.session = sessionToken;
 
-    if (config.register.verify_email.active) {
+    if (config.register.verification.active && config.register.verification.method === 'email') {
       const verificationToken = jwt.sign({ userId: newUser._id, role: newUser.role }, secretVerifyEmailKey, { expiresIn: '30m' });
-      newUser.tokens.verifyEmail = verificationToken;
+      newUser.security.tokens.verifyEmail = verificationToken;
       sendVerificationEmail (email, verificationToken);
     }
     
@@ -186,7 +186,7 @@ const forgotPassword = async (req, res) => {
       { expiresIn: '30m' }
     );
 
-    user.tokens.resetPassword = resetPasswordToken;
+    user.security.tokens.resetPassword = resetPasswordToken;
 
     await user.save();
 
@@ -221,7 +221,7 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    if (user.tokens.resetPassword !== token) {
+    if (user.security.tokens.resetPassword !== token) {
       return res.status(401).json({ error: 'Token no coindice con el reset token del usuario' });
     }
 
@@ -231,7 +231,7 @@ const resetPassword = async (req, res) => {
 
     // Set values
     user.password = hashedPassword;
-    user.tokens.resetPassword = null;
+    user.security.tokens.resetPassword = null;
     await user.save();
 
     return res.json({ message: 'Contraseña restablecida exitosamente' });
@@ -266,13 +266,13 @@ const verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'User is already verified' });
     }
 
-    if (user.tokens.verifyEmail !== token) {
+    if (user.security.tokens.verifyEmail !== token) {
       return res.status(401).json({ error: 'Token no coindice con el token de verificación del usuario' });
     }
 
     // Set new values
     user.isVerified = true;
-    user.tokens.verifyEmail = null;
+    user.security.tokens.verifyEmail = null;
     await user.save();
 
     return res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
@@ -281,11 +281,17 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+const verifyPhone = async (req, res) => {
+
+  // TODO: Implementar logica
+}
+
 module.exports = {
   signInByMail,
   signUpByUsername,
   signUpByMail,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  verifyPhone,
 };
