@@ -17,7 +17,7 @@ describe("Config", () => {
         expect(Config).toBeDefined();
     });
 
-    test("should load all configurations", () => {
+    test("should load a file for each config key", () => {
         expect(configFiles.length).toBe(configProperties.length);
     });
   

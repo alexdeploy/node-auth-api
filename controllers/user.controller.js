@@ -2,7 +2,7 @@ require('dotenv').config();
 const User = require('../models/User.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const secretKey = process.env.TOKEN_SECRET_KEY;
+const secretSessionKey = process.env.TOKEN_SESSION_SECRET_KEY;
 const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
 const secretVerifyEmailKey = process.env.TOKEN_VERIFY_EMAIL_SECRET_KEY;
 const config = require('../api.config.js');
@@ -68,16 +68,23 @@ const signInByMail = async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role.id },
-      secretKey,
-      { expiresIn: '1w' } // 1m = 1 minute, 1h = 1 hour, 1d = 1 day, 1w = 1 week
+    const sessionToken = jwt.sign(
+      { 
+        userId: user._id,
+        role: user.role.id
+        // more useful data
+      },
+      secretSessionKey,
+      config.security.tokens.session.active ? 
+      { expiresIn: config.security.tokens.session.expiration } 
+      : null
     );
 
     res.status(200).json({
       email: user.email,
-      token
+      token: sessionToken
     });
+
     console.log('----- Contraseña verificada correctamente. Inicio de sesión exitoso.');
     user.save();
 
@@ -112,16 +119,28 @@ const signUpByMail = async (req, res) => {
     });
 
     const sessionToken = jwt.sign(
-      { userId: newUser._id, role: newUser.role.id }, 
-      secretKey, 
-      { expiresIn: '30m' }
+      {
+        userId: newUser._id,
+        role: newUser.role.id
+        // more useful data
+      },
+      secretSessionKey,
+      config.security.tokens.session.active ?
+      { expiresIn: config.security.tokens.session.expiration }
+      : null
     );
 
-    newUser.tokens.session = sessionToken;
+    newUser.security.tokens.session = sessionToken;
 
-    if (config.register.verify_email.active) {
-      const verificationToken = jwt.sign({ userId: newUser._id, role: newUser.role }, secretVerifyEmailKey, { expiresIn: '30m' });
-      newUser.tokens.verifyEmail = verificationToken;
+    // TODO: Refactorizar todas las generaciones de tokens.
+    if (config.register.verification.active && config.register.verification.method === 'email') {
+      const verificationToken = jwt.sign({ userId: newUser._id, role: newUser.role }, 
+        secretVerifyEmailKey, 
+        config.security.tokens.verification.email.active ?
+        { expiresIn: config.security.tokens.verification.email.expiration }
+        : null
+      );
+      newUser.security.tokens.verifyEmail = verificationToken;
       sendVerificationEmail (email, verificationToken);
     }
     
@@ -183,10 +202,12 @@ const forgotPassword = async (req, res) => {
     const resetPasswordToken = jwt.sign(
       { userId: user._id, role: user.role.id }, 
       secretResetKey, 
-      { expiresIn: '30m' }
+      config.security.tokens.reset_password.active ? 
+      { expiresIn: config.security.tokens.reset_password.expiration }
+      : null
     );
 
-    user.tokens.resetPassword = resetPasswordToken;
+    user.security.tokens.resetPassword = resetPasswordToken;
 
     await user.save();
 
@@ -221,7 +242,7 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    if (user.tokens.resetPassword !== token) {
+    if (user.security.tokens.resetPassword !== token) {
       return res.status(401).json({ error: 'Token no coindice con el reset token del usuario' });
     }
 
@@ -231,7 +252,7 @@ const resetPassword = async (req, res) => {
 
     // Set values
     user.password = hashedPassword;
-    user.tokens.resetPassword = null;
+    user.security.tokens.resetPassword = null;
     await user.save();
 
     return res.json({ message: 'Contraseña restablecida exitosamente' });
@@ -266,13 +287,13 @@ const verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'User is already verified' });
     }
 
-    if (user.tokens.verifyEmail !== token) {
+    if (user.security.tokens.verifyEmail !== token) {
       return res.status(401).json({ error: 'Token no coindice con el token de verificación del usuario' });
     }
 
     // Set new values
     user.isVerified = true;
-    user.tokens.verifyEmail = null;
+    user.security.tokens.verifyEmail = null;
     await user.save();
 
     return res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
@@ -281,11 +302,17 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+const verifyPhone = async (req, res) => {
+
+  // TODO: Implementar logica
+}
+
 module.exports = {
   signInByMail,
   signUpByUsername,
   signUpByMail,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  verifyPhone,
 };

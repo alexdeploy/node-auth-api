@@ -17,6 +17,6 @@ const CORS_OPTIONS = {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(CORS_OPTIONS));
-app.use('/api', routes)
+app.use(config.domain.route.auth.root, routes)
 
 app.listen(port, () => console.log('Listening on port ' + port + '...'));

@@ -99,11 +99,12 @@ heroku login
 
 Y persionamos ENTER. Nos abrirá una ventana para hacer login en nuestra cuenta de heroku.
 
+Creamos una nueva app en heroku
+
 ````bash
 heroku create -a app-name
 ````
 
-Esto creará una nueva app en heroku.
 
 Comprobamos que se ha configurado correctamente con:
 
@@ -119,7 +120,10 @@ git remote -v
 > origin  https://github.com/alexdeploy/node-auth-api.git (push)
 ````
 
-Configuramos las variables de entorno en heroku.
+Ahora vamos a configurar nuestras variables de entorno en heroku.
+
+Introducimos todos las claves y valores del archivo `.env`.
+
 
 ````bash
 heroku config:set NOMBRE_VARIABLE=valor
@@ -131,9 +135,7 @@ Comprobamos que se han guardado correctamente
 heroku config
 ````
 
-Vamos a nuestra aplicación -> Settings -> Config Bars.
 
-Introducimos todos las claves y valores del archivo `.env`.
 
 ````bash
 # Desplegar la rama main

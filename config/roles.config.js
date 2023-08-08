@@ -23,4 +23,9 @@ module.exports = {
         name: 'guest',
         description: 'Guest'
     },
+    all: {
+        id: 999,
+        name: 'all',
+        description: 'All Roles'
+    }
 }
