@@ -1,11 +1,12 @@
 require('dotenv').config();
 const bodyParser = require('body-parser');
 const routes = require('./routes/routes');
-const port = process.env.PORT || 5000;
+const port = process.env.PORT_SERVER || 5000;
 const express = require('express');
 const cors = require('cors');
 require('./plugins/mongoose');
 const app = express();
+const config = require('./api.config');
 
 const CORS_OPTIONS = {
     origin: '*',
