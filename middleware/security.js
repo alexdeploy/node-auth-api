@@ -52,7 +52,7 @@ const securityCheck = (user, res) => {
 // TODO: Crear funciones de filtrado sanitizado los strings para correo, nombre de usuario y contraseña.
 
 const escapeHtml = (unsafe) => {
-  return unsafe.replace(/[&<"']/g, (m) => ({
+  return unsafe.replace(/[&<>"']/g, (m) => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -69,5 +69,8 @@ module.exports = {
   securityCheck,
   checkIfAccountIsLocked,
   checkMaxLogginAttempts,
-  resetLockValues
+  resetLockValues,
+  escapeHtml,
+  sanitizedUsername,
+  sanitizedEmail,
  };
