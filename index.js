@@ -8,13 +8,6 @@ require('./plugins/mongoose');
 const app = express();
 const config = require('./api.config');
 
-const CORS_OPTIONS = {
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-};
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(config.cors.options));
