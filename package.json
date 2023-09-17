@@ -7,9 +7,12 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "deploy": "git push heroku main",
+    "deploy:dev": "git push heroku dev:main",
     "test": "jest"
   },
   "dependencies": {
+    "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

