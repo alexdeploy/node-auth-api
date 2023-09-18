@@ -2,7 +2,7 @@ module.exports = {
     // Opciones de configuración para CORS
     options: {
         // 1. Origen permitido para las solicitudes (valor por defecto: '*')
-        origin: '*', // Recomendación: Establece el dominio o URL desde donde se permitirán las solicitudes.
+        origin: 'https://app.alexrueda.dev', // Recomendación: Establece el dominio o URL desde donde se permitirán las solicitudes.
             
         // 2. Métodos HTTP permitidos (valor por defecto: 'GET,HEAD,PUT,PATCH,POST,DELETE')
         methods: 'GET,POST,PUT,DELETE', // Recomendación: Define los métodos HTTP que se pueden utilizar en las solicitudes. Ajusta según las necesidades de tu API.
