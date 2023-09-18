@@ -27,17 +27,18 @@ const debug = new Debug();
 
 // TODO: Convertir string de email a minúsculas ?
 const signInByMail = async (req, res) => {
-  const headers = req.headers;
+/*   const headers = req.headers;
 
   const request = {
     headers: req.headers,
     body: req.body,
   }
   
-  axios.post('https://log-auditor-052470f8b7e2.herokuapp.com/api/logs/save', request)
+  axios.post('https://log-auditor-052470f8b7e2.herokuapp.com/api/logs/save', request) */
 
   const { email, password } = req.body;
   const response = config.response.auth.sign_in;
+  console.log(response)
 
   try {
     debug.log(`✅ Searching user [${email}]...`);
@@ -45,7 +46,7 @@ const signInByMail = async (req, res) => {
 
     if (!user) {
       debug.error(`User not found.`);
-      return res.status(response.user_not_found.code).json({ message: response.user_not_found.message });
+      return res.status(response.error.user_not_found.code).json({ message: response.error.user_not_found.message, value: response.error.user_not_found.value });
     }
 
     // Check account lock before password verification
@@ -58,7 +59,7 @@ const signInByMail = async (req, res) => {
         const userLockedUntilString = userLockedUntil.toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
         
         debug.log(`Account [${user.id}] is locked until: [${userLockedUntilString}]. Remaining time: [${(userLockedUntil - Date.now()) / 60000}] minutes.`);
-        return res.status(response.error.user_is_locked.code).json({ message: response.error.user_is_locked.message + ' until: ' + userLockedUntilString });
+        return res.status(response.error.user_is_locked.code).json({ message: response.error.user_is_locked.message + ' until: ' + userLockedUntilString, value: response.error.user_is_locked.value });
       } else {
           resetLockValues(user);
       }
@@ -75,7 +76,7 @@ const signInByMail = async (req, res) => {
       const maxAttemptsReached = checkMaxLogginAttempts(user, config.security.logginAttempts.max);
       if (maxAttemptsReached) {
         lockUser(user)
-        return res.status(response.error.max_attempt_reached.code).json({ message: response.error.max_attempt_reached.message + ' Account is locked.' });
+        return res.status(response.error.max_attempt_reached.code).json({ message: response.error.max_attempt_reached.message + ' Account is locked.', value: response.error.max_attempt_reached.value });
       }
     }
 
@@ -83,7 +84,7 @@ const signInByMail = async (req, res) => {
       debug.log(`Password Invalid.`);
       debug.warning(`Loggin attempts: [${user.security.logginAttempts}/${config.security.logginAttempts.max}]`);
       user.save();
-      return res.status(response.error.incorrect_password.code).json({ message: response.error.incorrect_password.message });
+      return res.status(response.error.incorrect_password.code).json({ message: response.error.incorrect_password.message, value: response.error.incorrect_password.value });
     }
 
     const sessionToken = jwt.sign(
@@ -99,6 +100,7 @@ const signInByMail = async (req, res) => {
     );
 
     res.status(response.success.code).json({
+      value: response.success.value,
       // email: user.email,
       token: sessionToken
     });
@@ -108,7 +110,7 @@ const signInByMail = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error en el servidor' });
+    res.status(500).json({ message: 'Error en el servidor', value: 'server_error' });
   }
 }
 
@@ -123,7 +125,7 @@ const signUpByMail = async (req, res) => {
     const existingEmail = await User.findOne({ email });
 
     if (existingEmail) {
-      return res.status(response.error.email_already_exists.code).json({ message: response.error.email_already_exists.message });
+      return res.status(response.error.email_already_exists.code).json({ message: response.error.email_already_exists.message, value: response.error.email_already_exists.value });
     }
 
     // Generar una contraseña hash utilizando bcrypt
@@ -164,10 +166,10 @@ const signUpByMail = async (req, res) => {
     
     await newUser.save();
 
-    return res.status(response.success.code).json({message: response.success.message, token: sessionToken});
+    return res.status(response.success.code).json({message: response.success.message, token: sessionToken, value: response.success.value});
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor', value: 'server_error' });
   }
 }
 
