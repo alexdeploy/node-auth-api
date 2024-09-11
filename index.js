@@ -1,14 +1,15 @@
 const routes = require('./routes/routes');
+const port = process.env.PORT || 5000;
+const express = require('express');
+const cors = require('cors');
+const database = require('./modules/mongodb');
+const app = express();
 const config = require('./api.config');
-const Express = require('./plugins/express');
-const Mongoose = require('./plugins/mongoose');
 
-const server = new Express();
-const database = new Mongoose();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-server.loadBodyParser();
-server.loadCors();
-server.loadRoutes(config.domain.route.auth.root, routes)
+app.use(cors(config.cors.options));
+app.use(config.domain.route.auth.root, routes)
 
-server.start();
-database.connect();
+app.listen(port, () => console.log('Listening on port ' + port + '...'));

@@ -1,16 +1,15 @@
 const jwt = require('jsonwebtoken');
 
-
 function verifySessionToken(req, res, next) {
 
-    const secretKey = process.env.TOKEN_SECRET_KEY;
-    const token = req.headers.authorization;
+    const secretSessionKey = process.env.TOKEN_SESSION_SECRET_KEY;
+    const sessionToken = req.headers.authorization;
 
-    if (!token) {
+    if (!sessionToken) {
         return res.status(401).json({ message: 'Token de acceso no proporcionado' });
     }
 
-    jwt.verify(token, secretKey, (err, user) => {
+    jwt.verify(sessionToken, secretSessionKey, (err, user) => {
 
         if (err) return res.status(403).json({ message: 'Invalid token' });
 
@@ -47,9 +46,8 @@ function verifyResetToken(req, res, next) {
  * * Comprueba si el token es tipo auth [Bearer].
  * * Extrae el token JWT y decodifica el contenido.
  * * Comprueba si el id del rol del usuario coincide con alguno de los roles permitidos.
- * TODO: Habilitar role "all" para permitir todos los roles.
  * @param  {...any} allowedRoles Array of role object
- * @returns 
+ * @returns response to the next middleware
  */
 const authorize = (...allowedRoles) => {
 
@@ -58,7 +56,7 @@ const authorize = (...allowedRoles) => {
       const token = req.headers.authorization;
   
       if (!token || !token.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Acceso no autorizado. Debes estar autenticado.' });
+        return res.status(401).json({ message: 'Unauthorized access. You have to be authenticated' });
       }
   
       const jwtToken = token.split(' ')[1];
@@ -66,11 +64,14 @@ const authorize = (...allowedRoles) => {
       const decodedToken = jwt.decode(jwtToken);
   
       const userRole = decodedToken.role;
-  
+
+      // Check if allowedRole is "all"
+      if(allowedRoles.find(allowedRole => allowedRole.id === 999)) return next();
+      
       const allowed = allowedRoles.find(allowedRole => allowedRole.id === userRole.id);
   
       if (!allowed) {
-        return res.status(403).json({ message: 'Acceso denegado. No tienes permiso para acceder a esta ruta.' });
+        return res.status(403).json({ message: 'Access denied. You do not have permission to access this resource' });
       }
 
     next();

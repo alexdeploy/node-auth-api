@@ -17,6 +17,10 @@ router.post(slug.reset_password, verifyResetToken, resetPassword);
 
 router.post(slug.verify_email, authorize(role.user, role.admin), verifyEmail);
 
+router.get('/', (req, res) =>{
+    res.json({ message: 'Welcome to the auth api route. Developed by @alexdeploy' });
+})
+
 // TODO: /verify-phone
 // router.post(slug.verify_phone, verifyPhone);
 

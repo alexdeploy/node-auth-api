@@ -2,8 +2,10 @@ require('dotenv').config();
 
 module.exports = {
     name: {
-        server: 'http://localhost',
-        client: 'http://localhost'
+        prod_server: 'https://api.alexrueda.dev',
+        prod_client: 'https://app.alexrueda.dev',
+        dev_server: 'http://localhost',
+        dev_client: 'http://localhost'
     },
     port: {
         server: process.env.PORT_SERVER || 5000,

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const DB_URI = process.env.DB_MONGO_ATLAS_URI;
+const DB_URI = process.env.DB_MONGO_URI;
 const DB_OPTIONS = {
     useNewUrlParser: true, 
     useUnifiedTopology: true 

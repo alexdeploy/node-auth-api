@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const authDB = mongoose.connection.useDb('auth');
 
 const userSchema = new mongoose.Schema({
     _id: {
@@ -187,6 +188,6 @@ userSchema.pre('save', function (next) {
  * Model
  * * A class with which we build documents
  */
-const User = mongoose.model('user', userSchema);
+const User = authDB.model('user', userSchema);
 
 module.exports = User;

@@ -8,7 +8,7 @@ class Config {
 
   buildConfigurations() {
     const configDirPath = path.join(__dirname, "config");
-    const allowedExtension = ".config.js";
+    const allowedExtension = ".config.js"; // Only load config.js files
 
     // Read all files from /config path
     fs.readdirSync(configDirPath).forEach((file) => {

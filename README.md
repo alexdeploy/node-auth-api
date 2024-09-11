@@ -20,6 +20,14 @@
 
 Secure and easy-to-configure user authentication API developed using Node.js, Express, and MongoDB. It provides robust **password encryption**, **token-based authentication**, **email verification**, and **seamless email delivery** integration. With its straightforward setup, this project enables developers to quickly build a reliable and secure API user authentication system for their applications.
 
+1. [Instalation](#📥-installation)
+2. [Configuration](#⚙️-configuration)
+    - API
+    - Database
+    - Custom domain
+    - Email sending
+3. [Deploying](#🚀-deploying)
+
   ## 🧩 Features
   
 - ✅ Login attempts limited.
@@ -99,11 +107,12 @@ heroku login
 
 Y persionamos ENTER. Nos abrirá una ventana para hacer login en nuestra cuenta de heroku.
 
+Creamos una nueva app en heroku
+
 ````bash
 heroku create -a app-name
 ````
 
-Esto creará una nueva app en heroku.
 
 Comprobamos que se ha configurado correctamente con:
 
@@ -119,7 +128,10 @@ git remote -v
 > origin  https://github.com/alexdeploy/node-auth-api.git (push)
 ````
 
-Configuramos las variables de entorno en heroku.
+Ahora vamos a configurar nuestras variables de entorno en heroku.
+
+Introducimos todos las claves y valores del archivo `.env`.
+
 
 ````bash
 heroku config:set NOMBRE_VARIABLE=valor
@@ -131,9 +143,7 @@ Comprobamos que se han guardado correctamente
 heroku config
 ````
 
-Vamos a nuestra aplicación -> Settings -> Config Bars.
 
-Introducimos todos las claves y valores del archivo `.env`.
 
 ````bash
 # Desplegar la rama main
@@ -149,11 +159,15 @@ NOTAS IMPORTANTES SOBRE HEROKU CLI
 
 - Para volver a hacer deploy en caso de falla, tienes que realizar por lo menos un `git commit`
 
-### Set a custom domain
+## 🌎 Set a custom domain
 
-Vamos a hacerlo utilizando los <a href="https://devcenter.heroku.com/articles/custom-domains">comandos `domain` de Heroku CLI</a>.
+> ➕ Proveedor de dominio
 
-Si ya tenemos nuestro proveedor de dominios y nuestro dominio:
+Vamos a hacerlo utilizando los <a href="https://devcenter.heroku.com/articles/heroku-cli-commands">comandos de Heroku CLI</a>.
+
+Pero también puedes ver de forma más detallada <a href="https://devcenter.heroku.com/articles/custom-domains">cómo configurar un dominio personalizado en Heroku</a>.
+
+Añadimos un dominio a nuestro Heroku
 
 ````bash
 heroku domains:add www.example.com
@@ -171,7 +185,9 @@ heroku domains
 
 Si te equivocas, se pueden borrar con `heroku domains:remove www.example.com`.
 
-El DNS Target es el que tenemos que introducir en el valor CNAME de los registros DNS de nuestro dominio. El proveedor de dominio en este caso va a ser <a href="https://www.hostinger.com/">hostinger.com</a>.
+El DNS Target es el que tenemos que introducir en el valor CNAME de los registros DNS de nuestro dominio. El proveedor de dominio en este caso va a ser <a href="https://www.hostinger.com/">hostinger.com</a>. 
+
+> ¿Hay que borrar todos los otros valores CNAME del dominio?
 
 Quedando así:
 
@@ -180,6 +196,9 @@ Quedando así:
 | CNAME  | www.example.com | ...6qyoi.herokudns.com | ?   |
 
 En caso de un subdominio, habría que introducir solo su nombre, por ejemplo introduciendo `api`, apuntaría a `api.example.com`.
+
+## 📧 Configure email sending
+
 
 
 ## 📜 Documentation
