@@ -90,7 +90,8 @@ const signInByMail = async (req, res) => {
     const sessionToken = jwt.sign(
       { 
         userId: user._id,
-        role: user.role.id
+        role: user.role
+        
         // more useful data
       },
       secretSessionKey,
