@@ -102,7 +102,8 @@ const signInByMail = async (req, res) => {
     res.status(response.success.code).json({
       value: response.success.value,
       // email: user.email,
-      token: sessionToken
+      token: sessionToken,
+      role: user.role,
     });
 
     console.log('----- Contraseña verificada correctamente. Inicio de sesión exitoso.');
